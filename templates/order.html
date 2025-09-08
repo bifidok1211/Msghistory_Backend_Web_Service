@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <title>Составление заявки</title>
+  <link rel="stylesheet" href="/resources/styles/main.css">
+  <link rel="stylesheet" href="/resources/styles/order.css">
+  <link rel="stylesheet" href="/resources/styles/cards.css">
+</head>
+<body>
+
+  <header class="tg-header tg-header--with-link">
+    <div class="logo">
+      <span class="logo-title">Telegram</span>
+      <span class="logo-subtitle">Новая эра в общении</span>
+    </div>
+    <a class="header-link" href="/TG">Каналы</a>
+  </header>
+
+  <div class="page-title">Составление заявки</div>
+
+  <div class="order-summary">
+    <p class="order-summary__title">Результат</p>
+    <div class="order-summary__row">Охват:</div>
+    <div class="order-summary__row">Коэффициент передачи:</div>
+  </div>
+
+  <div class="order-grid">
+    {{range .order.Channels}}
+      {{if or (eq .ID 1) (eq .ID 2)}}
+        <div class="card card--vertical">
+          {{with .Image}}<img class="card-img" src="{{.}}" alt="">{{end}}
+          <div class="card-content">
+            <p class="card-title">{{.Title}}</p>
+            <a class="card-button tg-btn" href="/channel/{{ .ID }}">Перейти</a>
+          </div>
+        </div>
+
+        <div class="input-card">
+          <textarea placeholder="Введите текст"></textarea>
+        </div>
+      {{end}}
+    {{end}}
+  </div>
+
+</body>
+</html>

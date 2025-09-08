@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <title>Список каналов</title>
+  <link rel="stylesheet" href="/resources/styles/main.css">
+  <link rel="stylesheet" href="/resources/styles/order.css">
+  <link rel="stylesheet" href="/resources/styles/cards.css">
+</head>
+<body>
+
+  <header class="tg-header">
+    <div class="logo">
+      <span class="logo-title">Telegram</span>
+      <span class="logo-subtitle">Новая эра в общении</span>
+    </div>
+  </header>
+
+  <div class="page-title">Каналы</div>
+
+  <div class="search-row">
+    <form action="/TG" method="GET" class="search-form">
+      <input class="search-input" type="text" name="query" placeholder="Введите текст" value="{{ .query }}">
+    </form>
+
+    <a class="badge-icon" href="/order/1" aria-label="Составление заявки">
+      <span>{{.count}}</span>
+    </a>
+  </div>
+
+  <div class="container channels-grid">
+    {{range .channels}}
+    <div class="card card--vertical">
+      {{with .Image}}<img class="card-img" src="{{.}}" alt="">{{end}}
+      <div class="card-content">
+        <p class="card-title">{{.Title}}</p>
+        <a class="card-button tg-btn" href="/channel/{{ .ID }}">Перейти</a>
+      </div>
+    </div>
+    {{end}}
+  </div>
+
+</body>
+</html>
