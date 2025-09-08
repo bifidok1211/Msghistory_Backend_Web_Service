@@ -22,7 +22,7 @@
       <input class="search-input" type="text" name="query" placeholder="Введите текст" value="{{ .query }}">
     </form>
 
-    <a class="badge-icon" href="/order/1" aria-label="Составление заявки">
+    <a class="badge-icon" href="/order/{{.orderID}}" aria-label="Составление заявки">
       <span>{{.count}}</span>
     </a>
   </div>

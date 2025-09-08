@@ -40,11 +40,15 @@ func (h *Handler) GetChannels(ctx *gin.Context) {
 	if err != nil {
 		logrus.Error(err)
 	}
+	hchannels, err := h.Repository.GetChannels()
+	if err != nil {
+		logrus.Error(err)
+	}
 
 	count := 0
 	for _, order := range orders {
 		for _, сhannel := range order.Channels {
-			for _, с := range channels {
+			for _, с := range hchannels {
 				if сhannel.ID == с.ID {
 					count++
 				}
@@ -56,6 +60,7 @@ func (h *Handler) GetChannels(ctx *gin.Context) {
 		"channels": channels,
 		"query":    searchQuery,
 		"count":    count,
+		"orderID":  orders[0].ID_order,
 	})
 }
 
@@ -74,17 +79,6 @@ func (h *Handler) GetChannel(ctx *gin.Context) {
 
 	ctx.HTML(http.StatusOK, "single_channel.html", gin.H{
 		"channel": channel,
-	})
-}
-
-func (h *Handler) GetOrders(ctx *gin.Context) {
-	order, err := h.Repository.GetOrders()
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	ctx.HTML(http.StatusOK, "channels.html", gin.H{
-		"order": order,
 	})
 }
 
