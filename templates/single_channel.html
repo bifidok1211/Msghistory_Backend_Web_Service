@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <title>{{.channel.Title}}</title>
+  <title>{{.Title}}</title>
   <link rel="stylesheet" href="/resources/styles/main.css">
-  <link rel="stylesheet" href="/resources/styles/order.css">
+  <link rel="stylesheet" href="/resources/styles/tg.css">
   <link rel="stylesheet" href="/resources/styles/cards.css">
 </head>
 <body>
@@ -16,19 +16,19 @@
     <a class="header-link" href="/TG">Каналы</a>
   </header>
 
-  <div class="page-title">{{.channel.Title}}</div>
+  <div class="page-title">{{.Title}}</div>
 
   <div class="container">
-    <div class="card card--onefactor">
-      {{with .channel.Image}}<img class="card-img" src="{{.}}" alt="">{{end}}
+    <div class="card card--onechannel">
+      {{with .Image}}<img class="card-img" src="{{.}}" alt="">{{end}}
 
       <div class="card-body">
-        <p class="card-text">{{.channel.Text}}</p>
+        <p class="card-text">{{.Text}}</p>
       </div>
 
       <div class="card-footer">
-        <span class="card-name">{{.channel.Title}}</span>
-        {{with .channel.Subscribers}}<span class="card-subs">Количество подписчиков: {{.}}</span>{{end}}
+        <span class="card-name">{{.Title}}</span>
+        {{with .Subscribers}}<span class="card-subs">Количество подписчиков: {{.}}</span>{{end}}
       </div>
     </div>
   </div>

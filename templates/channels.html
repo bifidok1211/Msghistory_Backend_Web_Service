@@ -3,7 +3,7 @@
 <head>
   <title>Список каналов</title>
   <link rel="stylesheet" href="/resources/styles/main.css">
-  <link rel="stylesheet" href="/resources/styles/order.css">
+  <link rel="stylesheet" href="/resources/styles/tg.css">
   <link rel="stylesheet" href="/resources/styles/cards.css">
 </head>
 <body>
@@ -19,12 +19,19 @@
 
   <div class="search-row">
     <form action="/TG" method="GET" class="search-form">
-      <input class="search-input" type="text" name="query" placeholder="Введите текст" value="{{ .query }}">
+      <input class="search-input" type="text" name="searchingChannels" placeholder="Введите текст" value="{{ .channelsSearch }}">
     </form>
 
-    <a class="badge-icon" href="/order/1" aria-label="Составление заявки">
-      <span>{{.count}}</span>
+    {{ if gt .channelsCount 0 }}
+    <a class="badge-icon" href="/tg/{{ .tgID }}" aria-label="Составление заявки">
+      <span>{{.channelsCount}}</span>
     </a>
+  {{ else }}
+    <a class="badge-icon" style="cursor: not-allowed;" aria-label="Составление заявки">
+      <span></span>
+    </a>
+  {{ end }}
+  
   </div>
 
   <div class="container channels-grid">
@@ -34,6 +41,9 @@
       <div class="card-content">
         <p class="card-title">{{.Title}}</p>
         <a class="card-button tg-btn" href="/channel/{{ .ID }}">Перейти</a>
+        <form action="/tg/add/channel/{{ .ID }}" method="POST">
+            <button class="card-button" type="submit">Добавить</button>
+        </form>
       </div>
     </div>
     {{end}}

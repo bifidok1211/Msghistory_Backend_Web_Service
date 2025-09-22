@@ -2,8 +2,6 @@ package handler
 
 import (
 	"RIP/internal/app/repository"
-	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -19,89 +17,24 @@ func NewHandler(r *repository.Repository) *Handler {
 	}
 }
 
-func (h *Handler) GetChannels(ctx *gin.Context) {
-	var channels []repository.Channels
-	var err error
+func (h *Handler) RegisterHandler(router *gin.Engine) {
+	router.GET("/TG", h.GetAllChannels)
+	router.GET("/channel/:id", h.GetChannelByID)
+	router.GET("/tg/:tg_id", h.GetTG)
+	router.POST("/tg/add/channel/:channel_id", h.AddChannelToTG)
+	router.POST("/tg/:tg_id/delete", h.DeleteTG)
 
-	searchQuery := ctx.Query("query")
-	if searchQuery == "" {
-		channels, err = h.Repository.GetChannels()
-		if err != nil {
-			logrus.Error(err)
-		}
-	} else {
-		channels, err = h.Repository.GetChannelsByTitle(searchQuery)
-		if err != nil {
-			logrus.Error(err)
-		}
-	}
-
-	orders, err := h.Repository.GetOrders()
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	count := 0
-	for _, order := range orders {
-		for _, сhannel := range order.Channels {
-			for _, с := range channels {
-				if сhannel.ID == с.ID {
-					count++
-				}
-			}
-		}
-	}
-
-	ctx.HTML(http.StatusOK, "channels.html", gin.H{
-		"channels": channels,
-		"query":    searchQuery,
-		"count":    count,
-	})
 }
 
-func (h *Handler) GetChannel(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	channel, err := h.Repository.GetChannel(id)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	ctx.HTML(http.StatusOK, "single_channel.html", gin.H{
-		"channel": channel,
-	})
+func (h *Handler) RegisterStatic(router *gin.Engine) {
+	router.LoadHTMLGlob("templates/*")
+	router.Static("/resources", "./resources")
 }
 
-func (h *Handler) GetOrders(ctx *gin.Context) {
-	order, err := h.Repository.GetOrders()
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	ctx.HTML(http.StatusOK, "channels.html", gin.H{
-		"order": order,
-	})
-}
-
-func (h *Handler) GetOrder(ctx *gin.Context) {
-	idStr := ctx.Param("id")
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	order, err := h.Repository.GetOrder(id)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	ctx.HTML(http.StatusOK, "order.html", gin.H{
-		"order": order,
+func (h *Handler) errorHandler(ctx *gin.Context, errorStatusCode int, err error) {
+	logrus.Error(err.Error())
+	ctx.JSON(errorStatusCode, gin.H{
+		"status":      "error",
+		"description": err.Error(),
 	})
 }

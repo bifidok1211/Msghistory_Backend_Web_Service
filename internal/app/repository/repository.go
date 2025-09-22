@@ -1,144 +1,20 @@
 package repository
 
 import (
-	"fmt"
-	"strings"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type Repository struct {
+	db *gorm.DB
 }
 
-func NewRepository() (*Repository, error) {
-	return &Repository{}, nil
-}
-
-type Channels struct {
-	ID          int
-	Title       string
-	Text        string
-	Image       string
-	Subscribers int
-}
-
-func (r *Repository) GetChannels() ([]Channels, error) {
-	channels := []Channels{
-		{
-			ID:          1,
-			Title:       "ИУ5",
-			Text:        "Кафедра ИУ5 МГТУ им Баумана",
-			Image:       "http://localhost:9000/images/tg_channels/IU5.jpg",
-			Subscribers: 375,
-		},
-		{
-			ID:          2,
-			Title:       "МГТУ им. Н.Э. Баумана",
-			Text:        "Официальный канал Бауманки.Здесь вы всегда найдете самые важные новости университета, информацию про мероприятия, интересные факты и многое другое!",
-			Image:       "http://localhost:9000/images/tg_channels/main_baum.jpg",
-			Subscribers: 24776,
-		},
-		{
-			ID:          3,
-			Title:       "Приемная коммиссия",
-			Text:        "Здесь вы найдете всю самую необходимую информацию, связанную с поступлением в Бауманку.",
-			Image:       "http://localhost:9000/images/tg_channels/priem.jpg",
-			Subscribers: 23482,
-		},
-		{
-			ID:          4,
-			Title:       "Студенческий совет ИУ",
-			Text:        "Новости о движе на факультете ИУ💙",
-			Image:       "http://localhost:9000/images/tg_channels/stud_iu.jpg",
-			Subscribers: 2019,
-		},
-		{
-			ID:          5,
-			Title:       "Профсоюз ИУ",
-			Text:        "Официальный телеграм-канал Профсоюза студентов факультета ИУ МГТУ им. Н.Э.Баумана",
-			Image:       "http://localhost:9000/images/tg_channels/prof.jpg",
-			Subscribers: 1105,
-		},
-		{
-			ID:          6,
-			Title:       "Студенческий совет",
-			Text:        "Самое студенческое СМИ Бауманки",
-			Image:       "http://localhost:9000/images/tg_channels/stud.jpg",
-			Subscribers: 7959,
-		},
-	}
-
-	if len(channels) == 0 {
-		return nil, fmt.Errorf("массив пустой")
-	}
-
-	return channels, nil
-}
-
-func (r *Repository) GetChannel(id int) (Channels, error) {
-	channels, err := r.GetChannels()
-	if err != nil {
-		return Channels{}, err
-	}
-
-	for _, channel := range channels {
-		if channel.ID == id {
-			return channel, nil
-		}
-	}
-
-	return Channels{}, fmt.Errorf("канал не найден")
-}
-
-func (r *Repository) GetChannelsByTitle(title string) ([]Channels, error) {
-	channels, err := r.GetChannels()
-	if err != nil {
-		return []Channels{}, err
-	}
-
-	var result []Channels
-	for _, channel := range channels {
-		if strings.Contains(strings.ToLower(channel.Title), strings.ToLower(title)) {
-			result = append(result, channel)
-		}
-	}
-
-	return result, nil
-}
-
-type Orders struct {
-	ID_order int
-	Channels []Channels
-}
-
-func (r *Repository) GetOrders() ([]Orders, error) {
-	channels, err := r.GetChannels()
+func New(dsn string) (*Repository, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-
-	orders := []Orders{
-		{
-			ID_order: 1,
-			Channels: []Channels{
-				channels[0],
-				channels[1],
-			},
-		},
-	}
-
-	return orders, nil
-}
-
-func (r *Repository) GetOrder(id int) (Orders, error) {
-	orders, err := r.GetOrders()
-	if err != nil {
-		return Orders{}, err
-	}
-
-	for _, order := range orders {
-		if order.ID_order == id {
-			return order, nil
-		}
-	}
-
-	return Orders{}, fmt.Errorf("канал не найден")
+	return &Repository{
+		db: db,
+	}, nil
 }

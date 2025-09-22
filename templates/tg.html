@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <title>Составление заявки</title>
+  <link rel="stylesheet" href="/resources/styles/main.css">
+  <link rel="stylesheet" href="/resources/styles/tg.css">
+  <link rel="stylesheet" href="/resources/styles/cards.css">
+</head>
+<body>
+
+  <header class="tg-header tg-header--with-link">
+    <div class="logo">
+      <span class="logo-title">Telegram</span>
+      <span class="logo-subtitle">Новая эра в общении</span>
+    </div>
+    <a class="header-link" href="/TG">Каналы</a>
+  </header>
+
+  <div class="page-title">Анализ поста</div>
+
+  <div class="order-summary">
+    <p class="order-summary__title">Результат</p>
+  
+    <div class="order-summary__row">
+      <span>Охват:</span>
+      <span class="order-summary__value">74%</span> 
+    </div>
+  
+    <div class="order-summary__row">
+      <span>Коэффициент передачи:</span>
+      <span class="order-summary__value">1.23</span>
+    </div>
+  </div>
+
+  <div class="order-grid">
+    {{range .ChannelsLink}}
+        <div class="card card--vertical">
+          {{with .Channel.Image}}<img class="card-img" src="{{.}}" alt="">{{end}}
+          <div class="card-content">
+            <p class="card-title">{{.Channel.Title}}</p>
+            <a class="card-button tg-btn" href="/channel/{{ .ID }}">Перейти</a>
+          </div>
+        </div>
+
+        <div class="metrics-card">
+            <div class="metrics-row">
+              <span class="metrics-label">Количество подписчиков:
+                {{ with .Channel.Subscribers }}{{ . }}{{ else }}-{{ end }}
+              </span>
+            </div>
+          
+            <div class="metrics-row">
+              <span class="metrics-label">Количество просмотров:</span>
+              <input class="metrics-input" type="number" placeholder="Введите число" name="views">
+            </div>
+          
+            <div class="metrics-row">
+              <span class="metrics-label">Уровень репоста:</span>
+              <input class="metrics-input" type="number" placeholder="Введите число" name="second">
+            </div>
+          </div>
+          
+    {{end}}
+  </div>
+  <div class="tg-delete-button">
+    <form action="/tg/{{ .ID }}/delete" method="POST">
+        <button class="card-button" type="submit">Удалить пост</button>
+    </form>
+</div>
+
+</body>
+</html>
