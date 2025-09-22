@@ -23,44 +23,27 @@ func (h *Handler) GetChannels(ctx *gin.Context) {
 	var channels []repository.Channels
 	var err error
 
-	searchQuery := ctx.Query("query")
-	if searchQuery == "" {
+	searchTG := ctx.Query("tg")
+	if searchTG == "" {
 		channels, err = h.Repository.GetChannels()
 		if err != nil {
 			logrus.Error(err)
 		}
 	} else {
-		channels, err = h.Repository.GetChannelsByTitle(searchQuery)
+		channels, err = h.Repository.GetChannelsByTitle(searchTG)
 		if err != nil {
 			logrus.Error(err)
 		}
 	}
 
-	orders, err := h.Repository.GetOrders()
-	if err != nil {
-		logrus.Error(err)
-	}
-	hchannels, err := h.Repository.GetChannels()
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	count := 0
-	for _, order := range orders {
-		for _, сhannel := range order.Channels {
-			for _, с := range hchannels {
-				if сhannel.ID == с.ID {
-					count++
-				}
-			}
-		}
-	}
+	items, _ := h.Repository.GetChannelsInTG(1)
+	count := len(items.Channels)
 
 	ctx.HTML(http.StatusOK, "channels.html", gin.H{
 		"channels": channels,
-		"query":    searchQuery,
+		"tg":       searchTG,
 		"count":    count,
-		"orderID":  orders[0].ID_order,
+		"id":       1,
 	})
 }
 
@@ -82,20 +65,25 @@ func (h *Handler) GetChannel(ctx *gin.Context) {
 	})
 }
 
-func (h *Handler) GetOrder(ctx *gin.Context) {
+func (h *Handler) GetTG(ctx *gin.Context) {
 	idStr := ctx.Param("id")
-
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		logrus.Error(err)
 	}
 
-	order, err := h.Repository.GetOrder(id)
+	tg, err := h.Repository.GetChannelsInTG(id)
 	if err != nil {
 		logrus.Error(err)
 	}
 
-	ctx.HTML(http.StatusOK, "order.html", gin.H{
-		"order": order,
+	ChannelsInArray, err := h.Repository.GetArrayOfChannels(id)
+	if err != nil {
+		logrus.Error(err)
+	}
+	ChannelsInTG := tg.Channels
+	ctx.HTML(http.StatusOK, "tg.html", gin.H{
+		"Channels":     ChannelsInArray,
+		"ChannelsInTG": ChannelsInTG,
 	})
 }
