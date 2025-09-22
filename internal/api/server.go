@@ -26,7 +26,7 @@ func StartServer() {
 
 	r.GET("/TG", handler.GetChannels)
 	r.GET("/channel/:id", handler.GetChannel)
-	r.GET("/order/:id", handler.GetOrder)
+	r.GET("/tg/:id", handler.GetTG)
 
 	r.Run()
 

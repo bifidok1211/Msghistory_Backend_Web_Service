@@ -20,6 +20,16 @@ type Channels struct {
 	Subscribers int
 }
 
+type ChannelsToTG struct {
+	ChannelId   int
+	Views       int
+	Repostlevel int
+}
+
+type TG struct {
+	Channels []ChannelsToTG
+}
+
 func (r *Repository) GetChannels() ([]Channels, error) {
 	channels := []Channels{
 		{
@@ -104,41 +114,32 @@ func (r *Repository) GetChannelsByTitle(title string) ([]Channels, error) {
 	return result, nil
 }
 
-type Orders struct {
-	ID_order int
-	Channels []Channels
+var ChannelsInTG = map[int]TG{
+	1: {
+		Channels: []ChannelsToTG{
+			{ChannelId: 0, Views: 25, Repostlevel: 0},
+			{ChannelId: 1, Views: 777, Repostlevel: 1},
+		},
+	},
 }
 
-func (r *Repository) GetOrders() ([]Orders, error) {
+func (r *Repository) GetChannelsInTG(id int) (TG, error) {
+	return ChannelsInTG[id], nil
+}
+
+func (r *Repository) GetArrayOfChannels(id int) ([]Channels, error) {
 	channels, err := r.GetChannels()
+	if err != nil {
+		return []Channels{}, err
+	}
+
+	var result []Channels
+	tg, err := r.GetChannelsInTG(id)
 	if err != nil {
 		return nil, err
 	}
-
-	orders := []Orders{
-		{
-			ID_order: 1,
-			Channels: []Channels{
-				channels[0],
-				channels[1],
-			},
-		},
+	for _, channelRef := range tg.Channels {
+		result = append(result, channels[channelRef.ChannelId])
 	}
-
-	return orders, nil
-}
-
-func (r *Repository) GetOrder(id int) (Orders, error) {
-	orders, err := r.GetOrders()
-	if err != nil {
-		return Orders{}, err
-	}
-
-	for _, order := range orders {
-		if order.ID_order == id {
-			return order, nil
-		}
-	}
-
-	return Orders{}, fmt.Errorf("канал не найден")
+	return result, nil
 }

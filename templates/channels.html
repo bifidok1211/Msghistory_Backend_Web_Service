@@ -3,7 +3,7 @@
 <head>
   <title>Список каналов</title>
   <link rel="stylesheet" href="/resources/styles/main.css">
-  <link rel="stylesheet" href="/resources/styles/order.css">
+  <link rel="stylesheet" href="/resources/styles/tg.css">
   <link rel="stylesheet" href="/resources/styles/cards.css">
 </head>
 <body>
@@ -19,10 +19,10 @@
 
   <div class="search-row">
     <form action="/TG" method="GET" class="search-form">
-      <input class="search-input" type="text" name="query" placeholder="Введите текст" value="{{ .query }}">
+      <input class="search-input" type="text" name="tg" placeholder="Введите текст" value="{{ .tg }}">
     </form>
 
-    <a class="badge-icon" href="/order/{{.orderID}}" aria-label="Составление заявки">
+    <a class="badge-icon" href="/order/1" aria-label="Составление заявки">
       <span>{{.count}}</span>
     </a>
   </div>
