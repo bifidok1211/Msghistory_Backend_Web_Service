@@ -51,12 +51,14 @@
           
             <div class="metrics-row">
               <span class="metrics-label">Количество просмотров:</span>
-              <input class="metrics-input" type="number" placeholder="Введите число" name="views">
+              <input class="metrics-input" type="number" name="views"
+                  value="{{with .Views}}{{.}}{{end}}">
             </div>
           
             <div class="metrics-row">
               <span class="metrics-label">Уровень репоста:</span>
-              <input class="metrics-input" type="number" placeholder="Введите число" name="second">
+              <input class="metrics-input" type="number" name="repost_level"
+         value="{{with .RepostLevel}}{{.}}{{end}}">
             </div>
           </div>
           
