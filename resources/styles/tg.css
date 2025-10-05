@@ -1,66 +1,146 @@
+/* ====== БАЗОВАЯ панель (фон, рамка, тень) ====== */
+.panel{
+  background:#F5F5F5;
+  border:1px solid #E1E5EA;
+  border-radius:12px;
+  box-shadow:10px 10px 0 #D9D9D9;
+  padding:16px 18px;
+  box-sizing:border-box;
+  font-family:"Open Sans", Arial, sans-serif;
+  color:#000;
+}
+
+/* ====== ВЕРХНЯЯ ЗОНА: Описание (3/4) + Результат (1/4) ====== */
+/* ширина синхронизирована с сеткой карточек ниже:
+   300 + 3*344 + 3*40  */
+.order-top{
+  width:100%;
+  max-width: calc(300px + 40px + 344px + 40px + 344px + 40px + 344px);
+  margin: 18px auto 8px;
+  display:grid;
+  grid-template-columns: 3fr 1fr; /* 3/4 : 1/4 */
+  gap:40px;
+}
+
+/* Левая панель — «Введите описание поста» */
+.post-desc__title{
+  margin:0 0 10px;
+  font-weight:600;
+  font-size:18px;
+}
+.post-desc__area{
+  width:100%;
+  min-height:110px;
+  padding:12px 14px;
+  font-size:16px;
+  color:#111;
+  background:#fff;
+  border:1px solid #E1E5EA;
+  border-radius:10px;
+  box-sizing:border-box;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
+  outline:none;
+  resize:vertical;
+}
+
+/* Правая панель — «Результат» */
 .order-summary{
-    width: calc(300px + 40px + 344px); 
-    margin: 18px auto 8px;
-    background:#F5F5F5;
-    border:1px solid #E1E5EA;
-    border-radius:10px;
-    box-shadow:10px 10px 0 #D9D9D9;
-    padding:16px 18px;
-    box-sizing:border-box;
-    font-family:"Open Sans", Arial, sans-serif;
-    color:#000;
-  }
-  .order-summary__title{ margin:0 0 10px; font-weight:600; font-size:18px; }
-  
-  .order-grid{
-    display:grid;
-    grid-template-columns: 300px 344px;
-    gap:40px;
-    max-width: calc(300px + 40px + 344px); 
-    margin:24px auto;
-  }
-  .order-summary__row{
-    margin:8px 0;
-    font-size:16px;
-    display:flex;                 /* ← label слева, значение справа */
-    justify-content:space-between;
-    align-items:center;
-  }
-  .order-summary__value{
-    font-weight:400;    /* обычный вес */
-    font-size:16px;     /* чуть поменьше */
-    color:#444;         /* темно-серый вместо чёрного */
-  }
-  
-  .metrics-card{
-    width:344px;
-    min-height:160px;
-    background:#F5F5F5;
-    border:1px solid #E1E5EA;
-    border-radius:12px;
-    box-shadow:10px 10px 0 #D9D9D9;
-    padding:16px;
-    box-sizing:border-box;
-    font-family:"Open Sans", Arial, sans-serif;
-    color:#333;
-  }
-  .metrics-row{ margin:12px 0; font-size:18px; }
-  .metrics-label{ display:block; margin-bottom:6px; }
-  .metrics-input{
-    width:100%;
-    padding:12px 14px;
-    background:#fff;
-    border:1px solid #E1E5EA;
-    border-radius:10px;
-    outline:none;
-    font-size:16px;
-    box-sizing:border-box;
-    box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
-  }
-  
-  .tg-delete-button{
-    max-width: calc(300px + 40px + 344px);
-    margin: 0 auto 24px;
-    display:flex;
-    justify-content:center;
-  }
+  /* растянут по правой границе до общей вертикали с карточками */
+  padding:24px 18px;                 /* чуть больше верх/низ, чтобы строки не липли */
+  display:grid;
+  grid-template-rows: auto 1fr;      /* заголовок + содержимое */
+  row-gap:12px;
+}
+.order-summary__title{
+  margin:0;
+  font-weight:600;
+  font-size:18px;
+}
+.order-summary__row{
+  margin:14px 0;                     /* равномерно распределяем визуально */
+  font-size:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.order-summary__value{ font-weight:400; font-size:16px; color:#444; }
+
+/* ====== СПИСОК строк анализа (каждая строка — одна «карточка» из 4 колонок) ====== */
+.analysis-list{
+  width:100%;
+  max-width: calc(300px + 40px + 344px + 40px + 344px + 40px + 344px);
+  margin: 24px auto;
+  display: grid;
+  gap: 28px; /* вертикальный отступ между строками */
+}
+
+/* Панель строки */
+.analysis-row{
+  position: relative;
+  background:#F5F5F5;
+  border:1px solid #E1E5EA;
+  border-radius:12px;
+  box-shadow:10px 10px 0 #D9D9D9;
+  padding:24px;
+  box-sizing:border-box;
+
+  display:grid;
+  grid-template-columns: 300px 344px 344px 344px; /* 4 колонки */
+  column-gap:40px;                                 /* «поля» между колонками */
+  transition: transform .12s ease;
+}
+.analysis-row:hover{ transform: translateY(-4px); }
+
+/* Колонки + вертикальные разделители (3 шт.) */
+.analysis-col{ position: relative; }
+.analysis-col:not(:last-child)::after{
+  content:"";
+  position:absolute;
+  top:0; bottom:0;
+  right:-20px;                /* центр 40px-зазора */
+  width:1px;
+  background:#E1E5EA;
+}
+
+/* Левая колонка — плитка канала */
+.analysis-col--channel{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  text-align:center;
+}
+.channel-img{
+  width:160px; height:160px; object-fit:cover; border-radius:10px;
+  background:#fff; box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
+}
+.channel-title{
+  margin:14px 0 10px 0;
+  font-family:"Open Sans", Arial, sans-serif;
+  font-size:18px; font-weight:600; color:#000;
+}
+
+/* Текстовые/полевая колонки */
+.metrics-label{ font-size:18px; color:#222; margin:6px 0 10px; }
+.metrics-value{ font-size:20px; font-weight:600; color:#222; }
+
+.metrics-input{
+  width:100%;
+  padding:12px 14px;
+  background:#fff;
+  border:1px solid #E1E5EA;
+  border-radius:10px;
+  outline:none;
+  font-size:16px;
+  box-sizing:border-box;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
+}
+
+/* Кнопка «Удалить пост» */
+.tg-delete-button{
+  width:100%;
+  max-width: calc(300px + 40px + 344px + 40px + 344px + 40px + 344px);
+  margin: 0 auto 24px;
+  display:flex;
+  justify-content:center;
+}

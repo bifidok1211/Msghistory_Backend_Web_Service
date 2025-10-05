@@ -18,57 +18,68 @@
 
   <div class="page-title">Анализ поста</div>
 
-  <div class="order-summary">
-    <p class="order-summary__title">Результат</p>
-  
-    <div class="order-summary__row">
-      <span>Охват:</span>
-      <span class="order-summary__value">74%</span> 
+  <div class="order-top">
+    <!-- 3/4: Введите описание поста -->
+    <div class="post-desc panel">
+      <p class="post-desc__title">Введите описание поста:</p>
+      <textarea class="post-desc__area" name="post_description" placeholder="Введите описание"></textarea>
     </div>
   
-    <div class="order-summary__row">
-      <span>Коэффициент передачи:</span>
-      <span class="order-summary__value">1.23</span>
+    <!-- 1/4: Результат -->
+    <div class="order-summary panel">
+      <p class="order-summary__title">Результат</p>
+      <div class="order-summary__row">
+        <span>Охват:</span>
+        <span class="order-summary__value">74%</span>
+      </div>
+      <div class="order-summary__row">
+        <span>Коэффициент передачи:</span>
+        <span class="order-summary__value">1.23</span>
+      </div>
     </div>
   </div>
 
-  <div class="order-grid">
+  <!-- СПИСОК «строк-панелей» анализа -->
+  <div class="analysis-list">
     {{range .ChannelsLink}}
-        <div class="card card--vertical">
-          {{with .Channel.Image}}<img class="card-img" src="{{.}}" alt="">{{end}}
-          <div class="card-content">
-            <p class="card-title">{{.Channel.Title}}</p>
-            <a class="card-button tg-btn" href="/channel/{{ .ID }}">Перейти</a>
-          </div>
-        </div>
+    <div class="analysis-row">
+      <!-- Колонка 1 — канал -->
+      <div class="analysis-col analysis-col--channel">
+        {{with .Channel.Image}}<img class="channel-img" src="{{.}}" alt="">{{end}}
+        <p class="channel-title">{{.Channel.Title}}</p>
+        <a class="tg-btn" href="/channel/{{ .ID }}">Перейти</a>
+      </div>
 
-        <div class="metrics-card">
-            <div class="metrics-row">
-              <span class="metrics-label">Количество подписчиков:
-                {{ with .Channel.Subscribers }}{{ . }}{{ else }}-{{ end }}
-              </span>
-            </div>
-          
-            <div class="metrics-row">
-              <span class="metrics-label">Количество просмотров:</span>
-              <input class="metrics-input" type="number" name="views"
-                  value="{{with .Views}}{{.}}{{end}}">
-            </div>
-          
-            <div class="metrics-row">
-              <span class="metrics-label">Уровень репоста:</span>
-              <input class="metrics-input" type="number" name="repost_level"
-         value="{{with .RepostLevel}}{{.}}{{end}}">
-            </div>
-          </div>
-          
+      <!-- Колонка 2 — подписчики (число) -->
+      <div class="analysis-col">
+        <div class="metrics-label">Количество подписчиков:</div>
+        <div class="metrics-value">
+          {{ with .Channel.Subscribers }}{{ . }}{{ else }}-{{ end }}
+        </div>
+      </div>
+
+      <!-- Колонка 3 — просмотры (инпут) -->
+      <div class="analysis-col">
+        <div class="metrics-label">Количество просмотров:</div>
+        <input class="metrics-input" type="number" name="views"
+               value="{{with .Views}}{{.}}{{end}}" placeholder="Введите число">
+      </div>
+
+      <!-- Колонка 4 — второй параметр (инпут) -->
+      <div class="analysis-col">
+        <div class="metrics-label">Уровень репоста:</div>
+        <input class="metrics-input" type="number" name="repost_level"
+               value="{{with .RepostLevel}}{{.}}{{end}}" placeholder="Введите число">
+      </div>
+    </div>
     {{end}}
   </div>
+
   <div class="tg-delete-button">
     <form action="/tg/{{ .ID }}/delete" method="POST">
-        <button class="card-button" type="submit">Удалить пост</button>
+      <button class="card-button" type="submit">Удалить пост</button>
     </form>
-</div>
+  </div>
 
 </body>
 </html>
