@@ -2,10 +2,9 @@ package config
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -14,33 +13,15 @@ type Config struct {
 }
 
 func NewConfig() (*Config, error) {
-	var err error
-
-	configName := "config"
 	_ = godotenv.Load()
-	if os.Getenv("CONFIG_NAME") != "" {
-		configName = os.Getenv("CONFIG_NAME")
+	host := os.Getenv("SERVICE_HOST")
+	if host == "" {
+		host = "localhost"
 	}
-
-	viper.SetConfigName(configName)
-	viper.SetConfigType("toml")
-	viper.AddConfigPath("config")
-	viper.AddConfigPath(".")
-	viper.WatchConfig()
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		return nil, err
+	portStr := os.Getenv("SERVICE_PORT")
+	port, _ := strconv.Atoi(portStr)
+	if port == 0 {
+		port = 8080
 	}
-
-	cfg := &Config{}           // создаем объект конфига
-	err = viper.Unmarshal(cfg) // читаем информацию из файла,
-	// конвертируем и затем кладем в нашу переменную cfg
-	if err != nil {
-		return nil, err
-	}
-
-	log.Info("config parsed")
-
-	return cfg, nil
+	return &Config{ServiceHost: host, ServicePort: port}, nil
 }

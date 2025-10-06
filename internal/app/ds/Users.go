@@ -9,5 +9,5 @@ type Users struct {
 
 	// --- СВЯЗИ ---
 	// Отношение "один-ко-многим": один пользователь может иметь много поисковых сессий.
-	TGSearchings []TGSearching `gorm:"foreignKey:CreatorID"`
+	MsghistorySearchings []MsghistorySearching `gorm:"foreignKey:CreatorID"`
 }

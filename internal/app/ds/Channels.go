@@ -10,5 +10,5 @@ type Channels struct {
 
 	// --- СВЯЗИ ---
 	// Отношение "один-ко-многим" к связующей таблице:
-	TGLinks []ChannelToTG `gorm:"foreignKey:ChannelID"`
+	MsghistoryLinks []ChannelToMsghistory `gorm:"foreignKey:ChannelID"`
 }
