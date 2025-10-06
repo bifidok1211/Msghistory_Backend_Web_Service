@@ -10,6 +10,9 @@ type TGSearching struct {
 	Moderator      *bool      `gorm:"column:moderator"`
 	FormingDate    *time.Time `gorm:"column:forming_date"`
 	ComplitionDate *time.Time `gorm:"column:complition_date"`
+	Description    *string    `gorm:"column:description;type:text"`
+	Coverage       *float64   `gorm:"column:coverage"`
+	Coefficient    *float64   `gorm:"column:coefficient"`
 
 	// --- СВЯЗИ ---
 	// Отношение "принадлежит к": каждая сессия принадлежит одному пользователю.
