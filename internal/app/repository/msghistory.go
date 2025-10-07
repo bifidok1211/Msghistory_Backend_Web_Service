@@ -335,7 +335,7 @@ func (r *Repository) UpdateMM(msghistoryID, channelID uint, updateData ds.Channe
 		updates["views"] = *updateData.Views
 	}
 	if updateData.RepostLevel != nil {
-		updates["repostLevel"] = *updateData.RepostLevel
+		updates["repost_level"] = *updateData.RepostLevel
 	}
 
 	if len(updates) == 0 {
