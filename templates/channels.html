@@ -3,7 +3,7 @@
 <head>
   <title>Список каналов</title>
   <link rel="stylesheet" href="/resources/styles/main.css">
-  <link rel="stylesheet" href="/resources/styles/tg.css">
+  <link rel="stylesheet" href="/resources/styles/msghistory.css">
   <link rel="stylesheet" href="/resources/styles/cards.css">
 </head>
 <body>
@@ -18,12 +18,12 @@
   <div class="page-title">Каналы</div>
 
   <div class="search-row">
-    <form action="/TG" method="GET" class="search-form">
+    <form action="/channels" method="GET" class="search-form">
       <input class="search-input" type="text" name="searchingChannels" placeholder="Введите текст" value="{{ .channelsSearch }}">
     </form>
 
     {{ if gt .channelsCount 0 }}
-    <a class="badge-icon" href="/tg/{{ .tgID }}" aria-label="Составление заявки">
+    <a class="badge-icon" href="/msghistory/{{ .msghistoryID }}" aria-label="Составление заявки">
       <span>{{.channelsCount}}</span>
     </a>
   {{ else }}
@@ -41,7 +41,7 @@
       <div class="card-content">
         <p class="card-title">{{.Title}}</p>
         <a class="card-button tg-btn" href="/channel/{{ .ID }}">Перейти</a>
-        <form action="/tg/add/channel/{{ .ID }}" method="POST">
+        <form action="/msghistory/add/channel/{{ .ID }}" method="POST">
             <button class="card-button" type="submit">Добавить</button>
         </form>
       </div>

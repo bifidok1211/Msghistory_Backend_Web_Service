@@ -28,22 +28,22 @@ func (h *Handler) GetAllChannels(ctx *gin.Context) {
 		return
 	}
 
-	draftTG, err := h.Repository.GetDraftTG(hardcodedUserID)
-	var tgID uint = 0
+	draftMsghistory, err := h.Repository.GetDraftMsghistory(hardcodedUserID)
+	var msghistoryID uint = 0
 	var channelsCount int = 0
 
-	if err == nil && draftTG != nil {
-		fullTG, err := h.Repository.GetTGWithChannels(draftTG.ID)
+	if err == nil && draftMsghistory != nil {
+		fullMsghistory, err := h.Repository.GetMsghistoryWithChannels(draftMsghistory.ID)
 		if err == nil {
-			tgID = fullTG.ID
-			channelsCount = len(fullTG.ChannelsLink)
+			msghistoryID = fullMsghistory.ID
+			channelsCount = len(fullMsghistory.ChannelsLink)
 		}
 	}
 
 	ctx.HTML(http.StatusOK, "channels.html", gin.H{
 		"channels":       channels,
 		"channelsSearch": searchingChannels,
-		"tgID":           tgID,
+		"msghistoryID":   msghistoryID,
 		"channelsCount":  channelsCount,
 	})
 }

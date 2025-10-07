@@ -17,8 +17,8 @@ func main() {
 	}
 	err = db.AutoMigrate(
 		&ds.Channels{},
-		&ds.TGSearching{},
-		&ds.ChannelToTG{},
+		&ds.MsghistorySearching{},
+		&ds.ChannelToMsghistory{},
 		&ds.Users{},
 	)
 	if err != nil {

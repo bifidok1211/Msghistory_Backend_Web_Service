@@ -18,11 +18,11 @@ func NewHandler(r *repository.Repository) *Handler {
 }
 
 func (h *Handler) RegisterHandler(router *gin.Engine) {
-	router.GET("/TG", h.GetAllChannels)
+	router.GET("/Msghistory", h.GetAllChannels)
 	router.GET("/channel/:id", h.GetChannelByID)
-	router.GET("/tg/:tg_id", h.GetTG)
-	router.POST("/tg/add/channel/:channel_id", h.AddChannelToTG)
-	router.POST("/tg/:tg_id/delete", h.DeleteTG)
+	router.GET("/msghistory/:msghistory_id", h.GetMsghistory)
+	router.POST("/msghistory/add/channel/:channel_id", h.AddChannelToMsghistory)
+	router.POST("/msghistory/:msghistory_id/delete", h.DeleteMsghistory)
 
 }
 

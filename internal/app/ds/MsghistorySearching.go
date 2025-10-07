@@ -2,12 +2,12 @@ package ds
 
 import "time"
 
-type TGSearching struct {
+type MsghistorySearching struct {
 	ID             uint       `gorm:"primaryKey;column:id"`
 	Status         int        `gorm:"column:status;not null"`
 	CreationDate   time.Time  `gorm:"column:creation_date;not null"`
 	CreatorID      uint       `gorm:"column:creator_id;not null"` // Внешний ключ
-	Moderator      *bool      `gorm:"column:moderator"`
+	ModeratorID    *uint      `gorm:"column:moderator_id"`
 	FormingDate    *time.Time `gorm:"column:forming_date"`
 	ComplitionDate *time.Time `gorm:"column:complition_date"`
 	Description    *string    `gorm:"column:description;type:text"`
@@ -16,7 +16,8 @@ type TGSearching struct {
 
 	// --- СВЯЗИ ---
 	// Отношение "принадлежит к": каждая сессия принадлежит одному пользователю.
-	Creator Users `gorm:"foreignKey:CreatorID"`
+	Creator   Users  `gorm:"foreignKey:CreatorID"`
+	Moderator *Users `gorm:"foreignKey:ModeratorID"`
 	// Отношение "один-ко-многим" к связующей таблице:
-	ChannelsLink []ChannelToTG `gorm:"foreignKey:TGID"`
+	ChannelsLink []ChannelToMsghistory `gorm:"foreignKey:MsghistoryID"`
 }
