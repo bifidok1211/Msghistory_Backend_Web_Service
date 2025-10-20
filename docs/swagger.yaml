@@ -1,0 +1,868 @@
+basePath: /api
+definitions:
+  ds.CartBadgeDTO:
+    properties:
+      count:
+        type: integer
+      msghistory_id:
+        type: integer
+    type: object
+  ds.ChannelCreateRequest:
+    properties:
+      subscribers:
+        type: integer
+      text:
+        type: string
+      title:
+        type: string
+    required:
+    - text
+    - title
+    type: object
+  ds.ChannelDTO:
+    properties:
+      id:
+        type: integer
+      image:
+        type: string
+      status:
+        type: boolean
+      subscribers:
+        type: integer
+      text:
+        type: string
+      title:
+        type: string
+    type: object
+  ds.ChannelInMsghistoryDTO:
+    properties:
+      channel_id:
+        type: integer
+      image:
+        type: string
+      repost_level:
+        type: integer
+      subscribers:
+        type: integer
+      text:
+        type: string
+      title:
+        type: string
+      views:
+        type: integer
+    type: object
+  ds.ChannelToMsghistoryUpdateRequest:
+    properties:
+      repost_level:
+        type: integer
+      views:
+        type: integer
+    type: object
+  ds.ChannelUpdateRequest:
+    properties:
+      subscribers:
+        type: integer
+      text:
+        type: string
+      title:
+        type: string
+    type: object
+  ds.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/ds.UserDTO'
+    type: object
+  ds.MsghistoryDTO:
+    properties:
+      channels:
+        items:
+          $ref: '#/definitions/ds.ChannelInMsghistoryDTO'
+        type: array
+      coefficient:
+        type: number
+      complition_date:
+        type: string
+      coverage:
+        type: number
+      creation_date:
+        type: string
+      creator_login:
+        type: integer
+      description:
+        type: string
+      forming_date:
+        type: string
+      id:
+        type: integer
+      moderator_login:
+        type: integer
+      status:
+        type: integer
+    type: object
+  ds.MsghistoryResolveRequest:
+    properties:
+      action:
+        description: '"complete" | "reject"'
+        type: string
+    required:
+    - action
+    type: object
+  ds.MsghistoryUpdateRequest:
+    properties:
+      description:
+        type: string
+    type: object
+  ds.PaginatedResponse:
+    properties:
+      items: {}
+      total:
+        type: integer
+    type: object
+  ds.UserDTO:
+    properties:
+      full_name:
+        type: string
+      id:
+        type: integer
+      moderator:
+        type: boolean
+      username:
+        type: string
+    type: object
+  ds.UserLoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  ds.UserRegisterRequest:
+    properties:
+      full_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - full_name
+    - password
+    - username
+    type: object
+  ds.UserUpdateRequest:
+    properties:
+      full_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8090
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: API-сервер для управления заявками и факторами риска в системе Msghistory.
+  title: API для системы Msghistory
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Получение JWT токена по логину и паролю для доступа к защищенным
+        эндпоинтам.
+      parameters:
+      - description: Учетные данные пользователя
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/ds.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.LoginResponse'
+        "400":
+          description: Ошибка валидации
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Неверные учетные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Аутентификация пользователя (все)
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: Добавляет текущий JWT токен в черный список, делая его недействительным.
+        Требует авторизации.
+      responses:
+        "200":
+          description: Сообщение об успехе
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Выход из системы (авторизованный пользователь)
+      tags:
+      - auth
+  /channels:
+    get:
+      description: Возвращает постраничный список каналов риска.
+      parameters:
+      - description: Фильтр по названию канала
+        in: query
+        name: title
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.PaginatedResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить список каналов (все)
+      tags:
+      - channels
+    post:
+      consumes:
+      - application/json
+      description: Создает новую запись о канале риска.
+      parameters:
+      - description: Данные нового канала
+        in: body
+        name: channelData
+        required: true
+        schema:
+          $ref: '#/definitions/ds.ChannelCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ds.ChannelDTO'
+        "400":
+          description: Ошибка валидации
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Доступ запрещен (не модератор)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Создать новый канал (только модератор)
+      tags:
+      - channels
+  /channels/{id}:
+    delete:
+      description: Удаляет канал риска из системы.
+      parameters:
+      - description: ID канала для удаления
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Доступ запрещен
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Удалить канал (только модератор)
+      tags:
+      - channels
+    get:
+      description: Возвращает детальную информацию о канале риска.
+      parameters:
+      - description: ID канала
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.ChannelDTO'
+        "404":
+          description: Фактор не найден
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить один канал по ID (все)
+      tags:
+      - channels
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию о существующем канале риска.
+      parameters:
+      - description: ID канала
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные для обновления
+        in: body
+        name: updateData
+        required: true
+        schema:
+          $ref: '#/definitions/ds.ChannelUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.ChannelDTO'
+        "400":
+          description: Ошибка валидации
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Доступ запрещен
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Обновить канал (только модератор)
+      tags:
+      - channels
+  /channels/{id}/image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Загружает и привязывает изображение к каналу риска.
+      parameters:
+      - description: ID канала
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Файл изображения
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: URL загруженного изображения
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Файл не предоставлен
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Доступ запрещен
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Загрузить изображение для канала (только модератор)
+      tags:
+      - channels
+  /msghistory:
+    get:
+      description: Возвращает отфильтрованный список всех сформированных заявок (кроме
+        черновиков и удаленных).
+      parameters:
+      - description: Фильтр по статусу заявки
+        in: query
+        name: status
+        type: integer
+      - description: Фильтр по дате 'от' (формат YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: Фильтр по дате 'до' (формат YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ds.MsghistoryDTO'
+            type: array
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить список заявок (авторизованный пользователь)
+      tags:
+      - msghistory
+  /msghistory/{id}:
+    delete:
+      description: Логически удаляет заявку, переводя ее в статус "удалена".
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Удалить заявку (авторизованный пользователь)
+      tags:
+      - msghistory
+    get:
+      description: Возвращает полную информацию о заявке, включая привязанные каналы.
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.MsghistoryDTO'
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Заявка не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить одну заявку по ID (авторизованный пользователь)
+      tags:
+      - msghistory
+    put:
+      consumes:
+      - application/json
+      description: Позволяет пользователю обновить поля своей заявки (возраст, пол,
+        вес, рост).
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные для обновления
+        in: body
+        name: updateData
+        required: true
+        schema:
+          $ref: '#/definitions/ds.MsghistoryUpdateRequest'
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Обновить данные заявки (авторизованный пользователь)
+      tags:
+      - msghistory
+  /msghistory/{id}/channels/{channel_id}:
+    delete:
+      description: Удаляет связь между заявкой и каналом.
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID канала
+        in: path
+        name: channel_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Удалить канал из заявки (авторизованный пользователь)
+      tags:
+      - m-m
+    put:
+      consumes:
+      - application/json
+      description: Изменяет дополнительное описание для конкретного канала в рамках
+        одной заявки.
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID канала
+        in: path
+        name: channel_id
+        required: true
+        type: integer
+      - description: Новое описание
+        in: body
+        name: updateData
+        required: true
+        schema:
+          $ref: '#/definitions/ds.ChannelToMsghistoryUpdateRequest'
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Обновить описание канала в заявке (авторизованный пользователь)
+      tags:
+      - m-m
+  /msghistory/{id}/form:
+    put:
+      description: Переводит заявку из статуса "черновик" в "сформирована".
+      parameters:
+      - description: ID заявки (черновика)
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Не все поля заполнены
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Сформировать заявку (авторизованный пользователь)
+      tags:
+      - msghistory
+  /msghistory/{id}/resolve:
+    put:
+      consumes:
+      - application/json
+      description: Модератор завершает (с расчетом) или отклоняет заявку.
+      parameters:
+      - description: ID заявки
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Действие: ''complete'' или ''reject'''
+        in: body
+        name: action
+        required: true
+        schema:
+          $ref: '#/definitions/ds.MsghistoryResolveRequest'
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Доступ запрещен
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Завершить или отклонить заявку (только модератор)
+      tags:
+      - msghistory
+  /msghistory/channelscart:
+    get:
+      description: Возвращает ID черновика текущего пользователя и количество каналов
+        в нем.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.CartBadgeDTO'
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получить информацию для иконки корзины (авторизованный пользователь)
+      tags:
+      - msghistory
+  /msghistory/draft/channels/{channel_id}:
+    post:
+      description: Находит или создает черновик заявки для текущего пользователя и
+        добавляет в него канал.
+      parameters:
+      - description: ID канала для добавления
+        in: path
+        name: channel_id
+        required: true
+        type: integer
+      responses:
+        "201":
+          description: Сообщение об успехе
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Добавить канал в черновик заявки (все)
+      tags:
+      - channels
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя в системе. По умолчанию роль "пользователь",
+        не "модератор".
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/ds.UserRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ds.UserDTO'
+        "400":
+          description: Ошибка валидации
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Регистрация нового пользователя (все)
+      tags:
+      - auth
+  /users/{id}:
+    get:
+      description: Возвращает публичные данные пользователя. Требует авторизации.
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.UserDTO'
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Пользователь не найден
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Получение данных пользователя по ID (авторизованный пользователь)
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Обновляет имя пользователя или пароль. Требует авторизации.
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные для обновления
+        in: body
+        name: updateData
+        required: true
+        schema:
+          $ref: '#/definitions/ds.UserUpdateRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Ошибка валидации
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Необходима авторизация
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Обновление данных пользователя (авторизованный пользователь)
+      tags:
+      - users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

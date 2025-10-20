@@ -10,7 +10,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-const servicePrefix = "FRAX_System."
+const servicePrefix = "Msg_history_System."
 const jwtPrefix = "jwt."
 
 type Client struct {

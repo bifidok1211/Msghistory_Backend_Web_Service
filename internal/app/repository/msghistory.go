@@ -42,6 +42,10 @@ func (r *Repository) MsghistoryListFiltered(userID uint, isModerator bool, statu
 
 	query = query.Where("status != ? AND status != ?", ds.StatusDeleted, ds.StatusDraft)
 
+	if !isModerator {
+		query = query.Where("creator_id = ?", userID)
+	}
+
 	if status != "" {
 		if statusInt, err := strconv.Atoi(status); err == nil {
 			query = query.Where("status = ?", statusInt)

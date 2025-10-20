@@ -10,6 +10,16 @@ import (
 )
 
 // GET /api/msghistory/cart - иконка корзины
+
+// GetCartBadge godoc
+// @Summary      Получить информацию для иконки корзины (авторизованный пользователь)
+// @Description  Возвращает ID черновика текущего пользователя и количество каналов в нем.
+// @Tags         msghistory
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Success      200 {object} ds.CartBadgeDTO
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Router       /msghistory/channelscart [get]
 func (h *Handler) GetCartBadge(c *gin.Context) {
 	userID, err := getUserIDFromContext(c)
 	if err != nil {
@@ -43,6 +53,19 @@ func (h *Handler) GetCartBadge(c *gin.Context) {
 }
 
 // GET /api/msghistory - список заявок с фильтрацией
+
+// ListMsghistory godoc
+// @Summary      Получить список заявок (авторизованный пользователь)
+// @Description  Возвращает отфильтрованный список всех сформированных заявок (кроме черновиков и удаленных).
+// @Tags         msghistory
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        status query int false "Фильтр по статусу заявки"
+// @Param        from query string false "Фильтр по дате 'от' (формат YYYY-MM-DD)"
+// @Param        to query string false "Фильтр по дате 'до' (формат YYYY-MM-DD)"
+// @Success      200 {array} ds.MsghistoryDTO
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Router       /msghistory [get]
 func (h *Handler) ListMsghistory(c *gin.Context) {
 	userID, err := getUserIDFromContext(c)
 	if err != nil {
@@ -65,6 +88,18 @@ func (h *Handler) ListMsghistory(c *gin.Context) {
 }
 
 // GET /api/msghistory/:id - одна заявка с услугами
+
+// GetMsghistory godoc
+// @Summary      Получить одну заявку по ID (авторизованный пользователь)
+// @Description  Возвращает полную информацию о заявке, включая привязанные каналы.
+// @Tags         msghistory
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        id path int true "ID заявки"
+// @Success      200 {object} ds.MsghistoryDTO
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Failure      404 {object} map[string]string "Заявка не найдена"
+// @Router       /msghistory/{id} [get]
 func (h *Handler) GetMsghistory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -113,6 +148,18 @@ func (h *Handler) GetMsghistory(c *gin.Context) {
 }
 
 // PUT /api/msghistory/:id - изменение полей заявки
+
+// UpdateMsghistory godoc
+// @Summary      Обновить данные заявки (авторизованный пользователь)
+// @Description  Позволяет пользователю обновить поля своей заявки (возраст, пол, вес, рост).
+// @Tags         msghistory
+// @Accept       json
+// @Security     ApiKeyAuth
+// @Param        id path int true "ID заявки"
+// @Param        updateData body ds.MsghistoryUpdateRequest true "Данные для обновления"
+// @Success      204 "No Content"
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Router       /msghistory/{id} [put]
 func (h *Handler) UpdateMsghistory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -137,6 +184,17 @@ func (h *Handler) UpdateMsghistory(c *gin.Context) {
 }
 
 // PUT /api/msghistory/:id/form - сформировать заявку
+
+// FormMsghistory godoc
+// @Summary      Сформировать заявку (авторизованный пользователь)
+// @Description  Переводит заявку из статуса "черновик" в "сформирована".
+// @Tags         msghistory
+// @Security     ApiKeyAuth
+// @Param        id path int true "ID заявки (черновика)"
+// @Success      204 "No Content"
+// @Failure      400 {object} map[string]string "Не все поля заполнены"
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Router       /msghistory/{id}/form [put]
 func (h *Handler) FormMsghistory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -161,6 +219,19 @@ func (h *Handler) FormMsghistory(c *gin.Context) {
 }
 
 // PUT /api/msghistory/:id/resolve - завершить/отклонить заявку
+
+// ResolveMsghistory godoc
+// @Summary      Завершить или отклонить заявку (только модератор)
+// @Description  Модератор завершает (с расчетом) или отклоняет заявку.
+// @Tags         msghistory
+// @Accept       json
+// @Security     ApiKeyAuth
+// @Param        id path int true "ID заявки"
+// @Param        action body ds.MsghistoryResolveRequest true "Действие: 'complete' или 'reject'"
+// @Success      204 "No Content"
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Failure      403 {object} map[string]string "Доступ запрещен"
+// @Router       /msghistory/{id}/resolve [put]
 func (h *Handler) ResolveMsghistory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -192,6 +263,16 @@ func (h *Handler) ResolveMsghistory(c *gin.Context) {
 }
 
 // DELETE /api/msghistory/:id - удаление заявки
+
+// DeleteMsghistory godoc
+// @Summary      Удалить заявку (авторизованный пользователь)
+// @Description  Логически удаляет заявку, переводя ее в статус "удалена".
+// @Tags         msghistory
+// @Security     ApiKeyAuth
+// @Param        id path int true "ID заявки"
+// @Success      204 "No Content"
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Router       /msghistory/{id} [delete]
 func (h *Handler) DeleteMsghistory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -210,6 +291,17 @@ func (h *Handler) DeleteMsghistory(c *gin.Context) {
 }
 
 // DELETE /api/msghistory/:id/channels/:channel_id - удаление канала из заявки
+
+// RemoveChannelFromMsghistory godoc
+// @Summary      Удалить канал из заявки (авторизованный пользователь)
+// @Description  Удаляет связь между заявкой и каналом.
+// @Tags         m-m
+// @Security     ApiKeyAuth
+// @Param        id path int true "ID заявки"
+// @Param        channel_id path int true "ID канала"
+// @Success      204 "No Content"
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Router       /msghistory/{id}/channels/{channel_id} [delete]
 func (h *Handler) RemoveChannelFromMsghistory(c *gin.Context) {
 	msghistoryID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -234,6 +326,19 @@ func (h *Handler) RemoveChannelFromMsghistory(c *gin.Context) {
 }
 
 // PUT /api/msghistory/:id/channels/:channel_id - изменение м-м связи
+
+// UpdateMM godoc
+// @Summary      Обновить описание канала в заявке (авторизованный пользователь)
+// @Description  Изменяет дополнительное описание для конкретного канала в рамках одной заявки.
+// @Tags         m-m
+// @Accept       json
+// @Security     ApiKeyAuth
+// @Param        id path int true "ID заявки"
+// @Param        channel_id path int true "ID канала"
+// @Param        updateData body ds.ChannelToMsghistoryUpdateRequest true "Новое описание"
+// @Success      204 "No Content"
+// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Router       /msghistory/{id}/channels/{channel_id} [put]
 func (h *Handler) UpdateMM(c *gin.Context) {
 	msghistoryID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

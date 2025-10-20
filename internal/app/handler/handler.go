@@ -56,7 +56,7 @@ func (h *Handler) RegisterAPI(r *gin.RouterGroup) {
 	moderator := r.Group("/")
 	moderator.Use(h.AuthMiddleware, h.ModeratorMiddleware)
 	{
-		// Управление факторами (создание, изменение, удаление)
+		// Управление каналами (создание, изменение, удаление)
 		moderator.POST("/channels", h.CreateChannel)
 		moderator.PUT("/channels/:id", h.UpdateChannel)
 		moderator.DELETE("/channels/:id", h.DeleteChannel)
