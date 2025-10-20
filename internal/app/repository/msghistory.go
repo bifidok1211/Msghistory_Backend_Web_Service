@@ -36,7 +36,7 @@ func (r *Repository) GetMsghistoryWithChannels(msghistoryID uint) (*ds.Msghistor
 }
 
 // GET /api/msghistory - список заявок с фильтрацией
-func (r *Repository) MsghistoryListFiltered(status, from, to string) ([]ds.MsghistoryDTO, error) {
+func (r *Repository) MsghistoryListFiltered(userID uint, isModerator bool, status, from, to string) ([]ds.MsghistoryDTO, error) {
 	var msghistoryList []ds.MsghistorySearching
 	query := r.db.Preload("Creator").Preload("Moderator")
 

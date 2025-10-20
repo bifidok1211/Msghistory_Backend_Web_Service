@@ -154,7 +154,13 @@ func (h *Handler) AddChannelToDraft(c *gin.Context) {
 		return
 	}
 
-	if err := h.Repository.AddChannelToDraft(hardcodedUserID, uint(channelID)); err != nil {
+	userID, err := getUserIDFromContext(c)
+	if err != nil {
+		h.errorHandler(c, http.StatusUnauthorized, err)
+		return
+	}
+
+	if err := h.Repository.AddChannelToDraft(userID, uint(channelID)); err != nil {
 		h.errorHandler(c, http.StatusInternalServerError, err)
 		return
 	}

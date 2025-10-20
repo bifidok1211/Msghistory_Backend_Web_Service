@@ -1,53 +1,70 @@
 package handler
 
 import (
+	"RIP/internal/app/config"
+	"RIP/internal/app/redis"
 	"RIP/internal/app/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
-const hardcodedUserID = 1
-
 type Handler struct {
 	Repository *repository.Repository
+	Redis      *redis.Client
+	JWTConfig  *config.JWTConfig
 }
 
-func NewHandler(r *repository.Repository) *Handler {
+func NewHandler(r *repository.Repository, redis *redis.Client, jwtConfig *config.JWTConfig) *Handler {
 	return &Handler{
 		Repository: r,
+		Redis:      redis,
+		JWTConfig:  jwtConfig,
 	}
 }
 
 func (h *Handler) RegisterAPI(r *gin.RouterGroup) {
-	// Домен услуг (каналов)
+
+	// Доступны всем
+	r.POST("/users", h.Register)
+	r.POST("/auth/login", h.Login)
 	r.GET("/channels", h.GetChannels)
 	r.GET("/channels/:id", h.GetChannel)
-	r.POST("/channels", h.CreateChannel)
-	r.PUT("/channels/:id", h.UpdateChannel)
-	r.DELETE("/channels/:id", h.DeleteChannel)
-	r.POST("/msghistory/draft/channels/:channel_id", h.AddChannelToDraft)
-	r.POST("/channels/:id/image", h.UploadChannelImage)
 
-	// Домен заявок (Msghistory)
-	r.GET("/msghistory/cart", h.GetCartBadge)
-	r.GET("/msghistory", h.ListMsghistory)
-	r.GET("/msghistory/:id", h.GetMsghistory)
-	r.PUT("/msghistory/:id", h.UpdateMsghistory)
-	r.PUT("/msghistory/:id/form", h.FormMsghistory)
-	r.PUT("/msghistory/:id/resolve", h.ResolveMsghistory)
-	r.DELETE("/msghistory/:id", h.DeleteMsghistory)
+	// Эндпоинты, доступные только авторизованным пользователям
+	auth := r.Group("/")
+	auth.Use(h.AuthMiddleware)
+	{
+		// Пользователи
+		auth.POST("/auth/logout", h.Logout)
+		auth.GET("/users/:id", h.GetUserData)
+		auth.PUT("/users/:id", h.UpdateUserData)
 
-	// Домен м-м
-	r.DELETE("/msghistory/:id/channels/:channel_id", h.RemoveChannelFromMsghistory)
-	r.PUT("/msghistory/:id/channels/:channel_id", h.UpdateMM)
+		// Заявки
+		auth.POST("/msghistory/draft/channels/:channel_id", h.AddChannelToDraft)
+		auth.GET("/msghistory/channelscart", h.GetCartBadge)
+		auth.GET("/msghistory", h.ListMsghistory)
+		auth.GET("/msghistory/:id", h.GetMsghistory)
+		auth.PUT("/msghistory/:id", h.UpdateMsghistory)
+		auth.PUT("/msghistory/:id/form", h.FormMsghistory)
+		auth.DELETE("/msghistory/:id", h.DeleteMsghistory)
+		auth.DELETE("/msghistory/:id/channels/:channel_id", h.RemoveChannelFromMsghistory)
+		auth.PUT("/msghistory/:id/channels/:channel_id", h.UpdateMM)
+	}
 
-	// Домен пользователь
-	r.POST("/users", h.Register)
-	r.GET("/users/:id", h.GetUserData)
-	r.PUT("/users/:id", h.UpdateUserData)
-	r.POST("/auth/login", h.Login)
-	r.POST("/auth/logout", h.Logout)
+	// Эндпоинты, доступные только модераторам
+	moderator := r.Group("/")
+	moderator.Use(h.AuthMiddleware, h.ModeratorMiddleware)
+	{
+		// Управление факторами (создание, изменение, удаление)
+		moderator.POST("/channels", h.CreateChannel)
+		moderator.PUT("/channels/:id", h.UpdateChannel)
+		moderator.DELETE("/channels/:id", h.DeleteChannel)
+		moderator.POST("/channels/:id/image", h.UploadChannelImage)
+
+		// Управление заявками (завершение/отклонение)
+		moderator.PUT("/msghistory/:id/resolve", h.ResolveMsghistory)
+	}
 }
 
 func (h *Handler) errorHandler(ctx *gin.Context, errorStatusCode int, err error) {

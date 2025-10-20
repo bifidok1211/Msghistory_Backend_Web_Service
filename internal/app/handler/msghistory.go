@@ -11,7 +11,13 @@ import (
 
 // GET /api/msghistory/cart - иконка корзины
 func (h *Handler) GetCartBadge(c *gin.Context) {
-	draft, err := h.Repository.GetDraftMsghistory(hardcodedUserID)
+	userID, err := getUserIDFromContext(c)
+	if err != nil {
+		h.errorHandler(c, http.StatusUnauthorized, err)
+		return
+	}
+
+	draft, err := h.Repository.GetDraftMsghistory(userID)
 	if err != nil {
 		c.JSON(http.StatusOK, ds.CartBadgeDTO{
 			MsghistoryID: nil,
@@ -38,11 +44,18 @@ func (h *Handler) GetCartBadge(c *gin.Context) {
 
 // GET /api/msghistory - список заявок с фильтрацией
 func (h *Handler) ListMsghistory(c *gin.Context) {
+	userID, err := getUserIDFromContext(c)
+	if err != nil {
+		h.errorHandler(c, http.StatusUnauthorized, err)
+		return
+	}
+	isModerator := isUserModerator(c)
+
 	status := c.Query("status")
 	from := c.Query("from")
 	to := c.Query("to")
 
-	msghistoryList, err := h.Repository.MsghistoryListFiltered(status, from, to)
+	msghistoryList, err := h.Repository.MsghistoryListFiltered(userID, isModerator, status, from, to)
 	if err != nil {
 		h.errorHandler(c, http.StatusInternalServerError, err)
 		return
@@ -131,7 +144,13 @@ func (h *Handler) FormMsghistory(c *gin.Context) {
 		return
 	}
 
-	if err := h.Repository.FormMsghistory(uint(id), hardcodedUserID); err != nil {
+	userID, err := getUserIDFromContext(c)
+	if err != nil {
+		h.errorHandler(c, http.StatusUnauthorized, err)
+		return
+	}
+
+	if err := h.Repository.FormMsghistory(uint(id), userID); err != nil {
 		h.errorHandler(c, http.StatusBadRequest, err)
 		return
 	}
@@ -155,7 +174,13 @@ func (h *Handler) ResolveMsghistory(c *gin.Context) {
 		return
 	}
 
-	moderatorID := uint(hardcodedUserID)
+	userID, err := getUserIDFromContext(c)
+	if err != nil {
+		h.errorHandler(c, http.StatusUnauthorized, err)
+		return
+	}
+
+	moderatorID := uint(userID)
 	if err := h.Repository.ResolveMsghistory(uint(id), moderatorID, req.Action); err != nil {
 		h.errorHandler(c, http.StatusBadRequest, err)
 		return

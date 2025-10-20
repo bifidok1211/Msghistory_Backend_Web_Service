@@ -24,6 +24,10 @@ func (r *Repository) GetUserByID(id uint) (*ds.Users, error) {
 func (r *Repository) UpdateUser(id uint, req ds.UserUpdateRequest) error {
 	updates := make(map[string]interface{})
 
+	if req.FullName != nil {
+		updates["full_name"] = *req.FullName
+	}
+
 	if req.Username != nil {
 		updates["username"] = *req.Username
 	}
