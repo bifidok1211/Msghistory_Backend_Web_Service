@@ -60,6 +60,8 @@ func (r *Repository) MsghistoryListFiltered(userID uint, isModerator bool, statu
 
 	if to != "" {
 		if toTime, err := time.Parse("2006-01-02", to); err == nil {
+			// Добавляем почти сутки, чтобы захватить весь день
+			toTime = toTime.Add(24 * time.Hour).Add(-1 * time.Second)
 			query = query.Where("forming_date <= ?", toTime)
 		}
 	}
@@ -132,59 +134,59 @@ func (r *Repository) FormMsghistory(id uint, creatorID uint) error {
 }
 
 // PUT /api/msghistory/:id/resolve - завершить/отклонить заявку
-func (r *Repository) ResolveMsghistory(id uint, moderatorID uint, action string) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
+// func (r *Repository) ResolveMsghistory(id uint, moderatorID uint, action string) error {
+// 	return r.db.Transaction(func(tx *gorm.DB) error {
 
-		var msghistory ds.MsghistorySearching
-		if err := tx.Preload("ChannelsLink.Channel").First(&msghistory, id).Error; err != nil {
-			return err
-		}
+// 		var msghistory ds.MsghistorySearching
+// 		if err := tx.Preload("ChannelsLink.Channel").First(&msghistory, id).Error; err != nil {
+// 			return err
+// 		}
 
-		if msghistory.Status != ds.StatusFormed {
-			return errors.New("only formed msghistory can be resolved")
-		}
+// 		if msghistory.Status != ds.StatusFormed {
+// 			return errors.New("only formed msghistory can be resolved")
+// 		}
 
-		now := time.Now()
-		updates := map[string]interface{}{
-			"moderator_id":    moderatorID,
-			"complition_date": now,
-		}
+// 		now := time.Now()
+// 		updates := map[string]interface{}{
+// 			"moderator_id":    moderatorID,
+// 			"complition_date": now,
+// 		}
 
-		switch action {
-		case "complete":
-			{
-				updates["status"] = ds.StatusCompleted
-				coverage, coefficient := r.postAnalysis(msghistory)
-				updates["coverage"] = coverage
-				updates["coefficient"] = coefficient
-			}
-		case "reject":
-			{
-				updates["status"] = ds.StatusRejected
-			}
-		default:
-			{
-				return errors.New("invalid action, must be 'complete' or 'reject'")
-			}
-		}
+// 		switch action {
+// 		case "complete":
+// 			{
+// 				updates["status"] = ds.StatusCompleted
+// 				coverage, coefficient := r.postAnalysis(msghistory)
+// 				updates["coverage"] = coverage
+// 				updates["coefficient"] = coefficient
+// 			}
+// 		case "reject":
+// 			{
+// 				updates["status"] = ds.StatusRejected
+// 			}
+// 		default:
+// 			{
+// 				return errors.New("invalid action, must be 'complete' or 'reject'")
+// 			}
+// 		}
 
-		if err := tx.Model(&msghistory).Updates(updates).Error; err != nil {
-			return err
-		}
+// 		if err := tx.Model(&msghistory).Updates(updates).Error; err != nil {
+// 			return err
+// 		}
 
-		var channelIDs []uint
-		for _, link := range msghistory.ChannelsLink {
-			channelIDs = append(channelIDs, link.ChannelID)
-		}
+// 		var channelIDs []uint
+// 		for _, link := range msghistory.ChannelsLink {
+// 			channelIDs = append(channelIDs, link.ChannelID)
+// 		}
 
-		if len(channelIDs) > 0 {
-			if err := tx.Model(&ds.Channels{}).Where("id IN ?", channelIDs).Update("status", false).Error; err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
+// 		if len(channelIDs) > 0 {
+// 			if err := tx.Model(&ds.Channels{}).Where("id IN ?", channelIDs).Update("status", false).Error; err != nil {
+// 				return err
+// 			}
+// 		}
+// 		return nil
+// 	})
+// }
 
 // Функция расчета
 // postAnalysis считает:
@@ -347,4 +349,66 @@ func (r *Repository) UpdateMM(msghistoryID, channelID uint, updateData ds.Channe
 	}
 
 	return r.db.Model(&link).Updates(updates).Error
+}
+
+// 1. Обновление результатов (вызывается из SetMsghistoryResult)
+func (r *Repository) UpdateMsghistoryResults(id uint, coverage, coefficient float64) error {
+	return r.db.Model(&ds.MsghistorySearching{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"coverage":    coverage,
+		"coefficient": coefficient,
+	}).Error
+}
+
+// 2. Получение полной информации (для ResolveMsghistory)
+func (r *Repository) GetMsghistoryFull(id uint) (*ds.MsghistorySearching, error) {
+	var msg ds.MsghistorySearching
+	// Обязательно подгружаем Channel, так как там лежат Subscribers
+	err := r.db.Preload("ChannelsLink.Channel").First(&msg, id).Error
+	return &msg, err
+}
+
+func (r *Repository) ResolveMsghistory(id uint, moderatorID uint, action string) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var msghistory ds.MsghistorySearching
+		if err := tx.Preload("ChannelsLink.Channel").First(&msghistory, id).Error; err != nil {
+			return err
+		}
+
+		if msghistory.Status != ds.StatusFormed {
+			return errors.New("only formed msghistory can be resolved")
+		}
+
+		updates := map[string]interface{}{
+			"moderator_id":    moderatorID,
+			"complition_date": time.Now(),
+		}
+
+		switch action {
+		case "complete":
+			updates["status"] = ds.StatusCompleted
+			// Убрали вызов r.postAnalysis(...)
+			// Поля coverage/coefficient пока не трогаем (остаются NULL/0)
+		case "reject":
+			updates["status"] = ds.StatusRejected
+		default:
+			return errors.New("invalid action")
+		}
+
+		if err := tx.Model(&msghistory).Updates(updates).Error; err != nil {
+			return err
+		}
+
+		// Освобождаем каналы
+		var channelIDs []uint
+		for _, link := range msghistory.ChannelsLink {
+			channelIDs = append(channelIDs, link.ChannelID)
+		}
+
+		if len(channelIDs) > 0 {
+			if err := tx.Model(&ds.Channels{}).Where("id IN ?", channelIDs).Update("status", false).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }

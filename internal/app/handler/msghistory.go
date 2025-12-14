@@ -2,6 +2,8 @@ package handler
 
 import (
 	"RIP/internal/app/ds"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -250,15 +252,54 @@ func (h *Handler) ResolveMsghistory(c *gin.Context) {
 		h.errorHandler(c, http.StatusUnauthorized, err)
 		return
 	}
-
 	moderatorID := uint(userID)
+
+	// 1. Меняем статус
 	if err := h.Repository.ResolveMsghistory(uint(id), moderatorID, req.Action); err != nil {
 		h.errorHandler(c, http.StatusBadRequest, err)
 		return
 	}
 
+	// 2. Сбор данных для сервиса
+	if req.Action == "complete" {
+		fullMsg, err := h.Repository.GetMsghistoryFull(uint(id))
+
+		if err == nil {
+			var items []ds.ItemData
+
+			for _, link := range fullMsg.ChannelsLink {
+				item := ds.ItemData{
+					ChannelID:   link.ChannelID,
+					Views:       link.Views,
+					RepostLevel: link.RepostLevel,
+				}
+
+				// ИСПРАВЛЕНИЕ ЗДЕСЬ:
+				// Проверяем ID канала вместо сравнения с nil.
+				// Если ChannelID != 0, значит GORM успешно подтянул данные канала.
+				if link.Channel.ID != 0 {
+					item.Subscribers = link.Channel.Subscribers
+				}
+				// Примечание: Если link.Channel — это пустая структура, то link.Channel.Subscribers и так будет nil,
+				// так что условие можно даже опустить, но с проверкой ID надежнее.
+
+				items = append(items, item)
+			}
+
+			calcReq := ds.AsyncCalcRequest{
+				ID:    fullMsg.ID,
+				Items: items,
+			}
+
+			go sendAsyncCalculation("http://localhost:8000/api/analysis/", calcReq)
+
+		} else {
+			logrus.Errorf("Failed to fetch msghistory data for async calc: %v", err)
+		}
+	}
+
 	c.JSON(http.StatusNoContent, gin.H{
-		"message": "Заявка обработана модератором",
+		"message": "Заявка обработана, расчет запущен.",
 	})
 }
 
@@ -271,7 +312,7 @@ func (h *Handler) ResolveMsghistory(c *gin.Context) {
 // @Security     ApiKeyAuth
 // @Param        id path int true "ID заявки"
 // @Success      204 "No Content"
-// @Failure      401 {object} map[string]string "Необходима авторизация"
+// @Failure      401 {object} map[string]string "Необходима авторизация"ы
 // @Router       /msghistory/{id} [delete]
 func (h *Handler) DeleteMsghistory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
@@ -369,6 +410,46 @@ func (h *Handler) UpdateMM(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNoContent, gin.H{
-		"message": "Дополнительная информация к фаткору обновлена",
+		"message": "Дополнительная информация к каналу обновлена",
 	})
+}
+
+// PUT /api/internal/msghistory/result
+func (h *Handler) SetMsghistoryResult(c *gin.Context) {
+	// 1. Простая авторизация по токену
+	token := c.GetHeader("Authorization")
+	expectedToken := "secret12"
+
+	if token != expectedToken {
+		c.JSON(http.StatusForbidden, gin.H{"error": "invalid token"})
+		return
+	}
+
+	// 2. Парсим ответ от Python
+	var res ds.AsyncCalcResponse
+	if err := c.BindJSON(&res); err != nil {
+		h.errorHandler(c, http.StatusBadRequest, err)
+		return
+	}
+
+	// 3. Пишем Coverage и Coefficient в базу
+	if err := h.Repository.UpdateMsghistoryResults(res.ID, res.Coverage, res.Coefficient); err != nil {
+		h.errorHandler(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "results updated"})
+}
+
+func sendAsyncCalculation(url string, data ds.AsyncCalcRequest) {
+	jsonData, _ := json.Marshal(data)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		logrus.Errorf("Failed to send async calc request: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		logrus.Errorf("Async service returned non-200 status: %d", resp.StatusCode)
+	}
 }

@@ -42,7 +42,7 @@ func (h *Handler) RegisterAPI(r *gin.RouterGroup) {
 
 		// Заявки
 		auth.POST("/msghistory/draft/channels/:channel_id", h.AddChannelToDraft)
-		auth.GET("/msghistory/channelscart", h.GetCartBadge)
+
 		auth.GET("/msghistory", h.ListMsghistory)
 		auth.GET("/msghistory/:id", h.GetMsghistory)
 		auth.PUT("/msghistory/:id", h.UpdateMsghistory)
@@ -50,6 +50,7 @@ func (h *Handler) RegisterAPI(r *gin.RouterGroup) {
 		auth.DELETE("/msghistory/:id", h.DeleteMsghistory)
 		auth.DELETE("/msghistory/:id/channels/:channel_id", h.RemoveChannelFromMsghistory)
 		auth.PUT("/msghistory/:id/channels/:channel_id", h.UpdateMM)
+		auth.GET("/msghistory/channelscart", h.GetCartBadge)
 	}
 
 	// Эндпоинты, доступные только модераторам
@@ -64,6 +65,10 @@ func (h *Handler) RegisterAPI(r *gin.RouterGroup) {
 
 		// Управление заявками (завершение/отклонение)
 		moderator.PUT("/msghistory/:id/resolve", h.ResolveMsghistory)
+	}
+	internal := r.Group("/internal")
+	{
+		internal.PUT("/msghistory/updating", h.SetMsghistoryResult)
 	}
 }
 

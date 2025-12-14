@@ -99,3 +99,24 @@ type PaginatedResponse struct {
 	Items interface{} `json:"items"`
 	Total int64       `json:"total"`
 }
+
+// ItemData - данные по одному каналу/связке, необходимые для формулы
+type ItemData struct {
+	ChannelID   uint  `json:"channel_id"`   // Нужно для проверки уникальности (seen map)
+	Subscribers *uint `json:"subscribers"`  // Может быть null
+	Views       *uint `json:"views"`        // Может быть null
+	RepostLevel *uint `json:"repost_level"` // Может быть null, нужно для разделения на уровни
+}
+
+// AsyncCalcRequest - отправляем список элементов, а не общие суммы
+type AsyncCalcRequest struct {
+	ID    uint       `json:"id"`
+	Items []ItemData `json:"items"`
+}
+
+// AsyncCalcResponse - то, что получаем обратно (без изменений)
+type AsyncCalcResponse struct {
+	ID          uint    `json:"id"`
+	Coverage    float64 `json:"coverage"`
+	Coefficient float64 `json:"coefficient"`
+}
