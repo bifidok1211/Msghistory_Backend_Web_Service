@@ -110,6 +110,7 @@ func (h *Handler) CreateChannel(c *gin.Context) {
 		Text:        req.Text,
 		Subscribers: req.Subscribers,
 		Status:      &statusValue,
+		Image:       req.Image,
 	}
 
 	if err := h.Repository.CreateChannel(&channel); err != nil {

@@ -12,15 +12,17 @@ type ChannelDTO struct {
 }
 
 type ChannelCreateRequest struct {
-	Title       string `json:"title" binding:"required"`
-	Text        string `json:"text" binding:"required"`
-	Subscribers *uint  `json:"subscribers"`
+	Title       string  `json:"title" binding:"required"`
+	Text        string  `json:"text" binding:"required"`
+	Subscribers *uint   `json:"subscribers"`
+	Image       *string `json:"image"`
 }
 
 type ChannelUpdateRequest struct {
 	Title       *string `json:"title"`
 	Text        *string `json:"text"`
 	Subscribers *uint   `json:"subscribers"`
+	Image       *string `json:"image"`
 }
 
 type MsghistoryDTO struct {

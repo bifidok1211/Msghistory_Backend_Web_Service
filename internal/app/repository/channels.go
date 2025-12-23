@@ -69,6 +69,9 @@ func (r *Repository) UpdateChannel(id uint, req ds.ChannelUpdateRequest) (*ds.Ch
 	if req.Subscribers != nil {
 		channel.Subscribers = req.Subscribers
 	}
+	if req.Image != nil {
+		channel.Image = req.Image
+	}
 
 	if err := r.db.Save(&channel).Error; err != nil {
 		return nil, err
